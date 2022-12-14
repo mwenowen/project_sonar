@@ -4,10 +4,12 @@ from utils import *
 from tqdm import tqdm
 from urllib.parse import unquote
 from threading import Thread
+from my_str import *
 
 ERROR = ' \033[1;31m[Error]\033[0m '
 INFO = ' \033[1;32m[Info]\033[0m '
 WARN = ' \033[1;33m[Warning]\033[0m '
+
 
 def thread_task(target, args):
     global threads
@@ -18,23 +20,40 @@ def thread_task(target, args):
     for thread in threads:
         thread.join()
 
-def main():
-    while True:
-        print('''
+
+def print_menu():
+    print('''
         1. Check urls status code
         2. Download files
         3. Read pdf meta data
         4. Check file hash
         99. Exit
         ''')
-        choice = input("Enter choice: ")
+
+
+def get_input(msg) -> str:
+    return input(msg)
+
+
+def get_choice():
+    print_menu()
+    return get_input(CHOICE_PROMPT)
+
+
+def handle_domain():
+    domain = get_input(DOMAIN_PROMPT)
+    urls = fetch_urls(domain)
+    for _ in tqdm(urls):
+        url = ''.join(_)
+        thread_task(check_status_code, url)
+        # check_status_code(url)
+
+
+def main():
+    while True:
+        choice = get_choice()
         if choice == '1':
-            domain = input("Enter domain: ")
-            urls = fetch_urls(domain)
-            for _ in tqdm(urls):
-                url = ''.join(_)
-                thread_task(check_status_code, url)
-                # check_status_code(url)
+            handle_domain()
         elif choice == '2':
             domain = input("Enter domain: ")
             extention = input("Enter file extention: ")
@@ -49,7 +68,8 @@ def main():
                     thread_task(download_file, url)
                     # download_file(url)
                     try:
-                        f_list.write('[{}]'.format(i) + file_name + ' ' + url + '\n')
+                        f_list.write('[{}]'.format(i) +
+                                     file_name + ' ' + url + '\n')
                     except Exception as e:
                         print(e, url)
                         pass
@@ -78,6 +98,7 @@ def main():
             print(time_stamp(), ERROR + 'Debug mode')
         else:
             print(ERROR + 'Invalid choice')
-    
+
+
 if __name__ == "__main__":
     main()
