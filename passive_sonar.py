@@ -49,45 +49,56 @@ def handle_domain():
         # check_status_code(url)
 
 
+def handle_download_file():
+    domain = get_input(DOMAIN_PROMPT)
+    extention = input(EXT_PROMPT)
+    urls = fetch_urls(domain)
+    f_list = open('{}_file_list.txt'.format(domain), 'w')
+    i = 1
+    for _ in tqdm(urls):
+        url = ''.join(_)
+        if url.endswith(extention):
+            # url decode twice in case of two times url encoding
+            file_name = unquote(unquote(url.split('/')[-1]))
+            thread_task(download_file, url)
+            # download_file(url)
+            try:
+                f_list.write('[{}]'.format(i) + file_name + ' ' + url + '\n')
+            except Exception as e:
+                print(e, url)
+                pass
+            i += 1
+    f_list.close()
+    print('\r\n' + DOWNLOAD_SUCCEED_MSG)
+    print('\r\n' + '[Files count: {}]'.format(i-1))
+
+
+def handle_read_pdf_meta():
+    directory = os.getcwd()
+    for file_name in tqdm(os.listdir(directory)):
+        file_path = os.path.join(directory, file_name)
+        if file_name.endswith('.pdf'):
+            read_pdf_meta(file_path)
+
+
+def handle_check_file_hash():
+    directory = os.getcwd()
+    for file_name in tqdm(os.listdir(directory)):
+        file_path = os.path.join(directory, file_name)
+        check_hash(file_path)
+
+
 def main():
     while True:
         choice = get_choice()
         if choice == '1':
             handle_domain()
         elif choice == '2':
-            domain = input("Enter domain: ")
-            extention = input("Enter file extention: ")
-            urls = fetch_urls(domain)
-            f_list = open('{}_file_list.txt'.format(domain), 'w')
-            i = 1
-            for _ in tqdm(urls):
-                url = ''.join(_)
-                if url.endswith(extention):
-                    # url decode twice in case of two times url encoding
-                    file_name = unquote(unquote(url.split('/')[-1]))
-                    thread_task(download_file, url)
-                    # download_file(url)
-                    try:
-                        f_list.write('[{}]'.format(i) +
-                                     file_name + ' ' + url + '\n')
-                    except Exception as e:
-                        print(e, url)
-                        pass
-                    i += 1
-            f_list.close()
-            print('\r\n' + DOWNLOAD_SUCCEED_MSG)
-            print('\r\n' + '[Files count: {}]'.format(i-1))
+            handle_download_file()
         elif choice == '3':
-            directory = os.getcwd()
-            for file_name in tqdm(os.listdir(directory)):
-                file_path = os.path.join(directory, file_name)
-                if file_name.endswith('.pdf'):
-                    read_pdf_meta(file_path)
+            handle_read_pdf_meta()
         elif choice == '4':
-            directory = os.getcwd()
-            for file_name in tqdm(os.listdir(directory)):
-                file_path = os.path.join(directory, file_name)
-                check_hash(file_path)
+            handle_check_file_hash()
         # TODO: add more functions
         elif choice == '99':
             print(INFO + 'Bye!')
