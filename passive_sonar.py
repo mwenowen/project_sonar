@@ -75,7 +75,7 @@ def main():
                         pass
                     i += 1
             f_list.close()
-            print('\r\n' + '[All files downloaded!]')
+            print('\r\n' + DOWNLOAD_SUCCEED_MSG)
             print('\r\n' + '[Files count: {}]'.format(i-1))
         elif choice == '3':
             directory = os.getcwd()
